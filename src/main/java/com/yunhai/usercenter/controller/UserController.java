@@ -54,6 +54,15 @@ public class UserController {
 
         return userService.userLogin(userAccount,userPassword,request);
     }
+
+    @PostMapping("/logout")
+    public Integer userLoginout(HttpServletRequest request){
+        if (request == null){
+            return null;
+        }
+        return userService.userLogout(request);
+    }
+
     @GetMapping("/search")
     public List<User> searchUsers(String userName,HttpServletRequest request){
         //仅管理员可查询
@@ -85,4 +94,5 @@ public class UserController {
         User user=(User) userObj;
         return user != null && user.getUserRole()== ADMIN_ROLE;
     }
+
 }
