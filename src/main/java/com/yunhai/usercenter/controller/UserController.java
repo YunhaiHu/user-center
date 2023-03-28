@@ -108,5 +108,4 @@ public class UserController {
         User user=(User) userObj;
         return user != null && user.getUserRole()== ADMIN_ROLE;
     }
-
 }
