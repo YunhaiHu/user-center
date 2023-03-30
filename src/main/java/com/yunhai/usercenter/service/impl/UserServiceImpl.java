@@ -2,6 +2,8 @@ package com.yunhai.usercenter.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.yunhai.usercenter.commen.ErrorCode;
+import com.yunhai.usercenter.exception.BusinessException;
 import com.yunhai.usercenter.model.domain.User;
 import com.yunhai.usercenter.service.UserService;
 import com.yunhai.usercenter.mapper.UserMapper;
@@ -39,29 +41,29 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     @Override
     public long userRegister(String userAccount, String userPassword, String checkPassword) {
         if (StringUtils.isAnyBlank(userAccount,userPassword,checkPassword)){
-            return -1;
+            throw new BusinessException(ErrorCode.PARAMS_ERROR,"参数为空");
         }
         if (userAccount.length()<4){
-            return  -1;
+            throw new BusinessException(ErrorCode.PARAMS_ERROR,"用户账号过短");
         }
         if(userPassword.length()<6 || checkPassword.length()<6){
-            return  -1;
+            throw new BusinessException(ErrorCode.PARAMS_ERROR,"密码小于6位");
         }
         //校验账户包含特殊字符
         String validPattern = ".*[*?!&￥$%^#,./@\";:><\\]\\[}{\\-=+_\\\\|》《。，、？’‘“”~`）].*$";
         Matcher matcher = Pattern.compile(validPattern).matcher(userAccount);
         if (matcher.find()){
-            return  -1;
+            throw new BusinessException(ErrorCode.PARAMS_ERROR,"包含特殊字符");
         }
         if (!userPassword.equals(checkPassword)){
-            return -1;
+            throw new BusinessException(ErrorCode.PARAMS_ERROR,"两次输入密码不一致");
         }
         //账户不能复现
         QueryWrapper<User> queryWrapper=new QueryWrapper<>();
         queryWrapper.eq("userAccount",userAccount);
         long count = userMapper.selectCount(queryWrapper);
         if (count>0){
-            return -1;
+            throw new BusinessException(ErrorCode.PARAMS_ERROR,"账号重复");
         }
         //2.加密
 
@@ -72,7 +74,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         user.setUserPassword(encryptPassword);
         boolean saveResult = this.save(user);
         if (!saveResult){
-            return  -1;
+            throw new BusinessException(ErrorCode.PARAMS_ERROR,"插入数据失败");
         }
 
         return  user.getId();
@@ -81,7 +83,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     @Override
     public User userLogin(String userAccount, String userPassword, HttpServletRequest request) {
         if (StringUtils.isAnyBlank(userAccount,userPassword)){
-            return null;
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
         if (userAccount.length()<4){
             return  null;
